@@ -1,0 +1,40 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# User-specified ignores
+backend/data/
+backend/scripts/
+docs/*
+!docs/architecture.md
+evaluation/make_sample_pdf.py
+issue/
+task2/
+commands.txt
+plan.md
+*.zip
+render.yaml
+server.log
+
+# Other system/tooling
+*.db
+*.sqlite3
+evaluation/results.json
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
