@@ -1,15 +1,36 @@
 import { useState } from 'react';
 import { api, getErrorMessage } from '../services/api';
 
-const initialForm = { name: '', email: '', password: '' };
+const initialForm = { name: '', email: '', password: '', confirmPassword: '' };
+
+function EyeIcon({ open }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12S18 18.5 12 18.5 2.5 12 2.5 12Z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.1" />
+      {!open && <path d="M4 20 20 4" strokeLinecap="round" />}
+    </svg>
+  );
+}
 
 export default function LoginPage({ onAuthenticated }) {
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const isRegister = mode === 'register';
+
+  const switchMode = (next) => {
+    if (next === mode) return;
+    setMode(next);
+    setError('');
+    setShowPassword(false);
+    setShowConfirm(false);
+    setForm((prev) => ({ ...prev, password: '', confirmPassword: '' }));
+  };
 
   const handleChange = (event) => {
     setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
@@ -18,6 +39,10 @@ export default function LoginPage({ onAuthenticated }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    if (isRegister && form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     setLoading(true);
     try {
       const endpoint = isRegister ? '/auth/register' : '/auth/login';
@@ -34,123 +59,168 @@ export default function LoginPage({ onAuthenticated }) {
   };
 
   return (
-    <div className="auth-shell">
-      <section className="auth-hero">
-        <div className="d-flex align-items-center gap-2 mb-2">
+    <div className="auth-page">
+      <main className="auth-panel">
+        <header className="auth-brand">
           <span className="brand-mark">SM</span>
-          <span className="fs-5 fw-semibold">StudyMate AI</span>
+          <span className="auth-brand-name">StudyMate AI</span>
+        </header>
+
+        <div className="auth-mode" role="tablist" aria-label="Authentication mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isRegister}
+            className={`auth-mode-btn ${!isRegister ? 'active' : ''}`}
+            onClick={() => switchMode('login')}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isRegister}
+            className={`auth-mode-btn ${isRegister ? 'active' : ''}`}
+            onClick={() => switchMode('register')}
+          >
+            Create account
+          </button>
         </div>
-        <h1>Your course material, turned into a study companion.</h1>
-        <p className="mb-0" style={{ color: 'rgba(255,255,255,0.82)', maxWidth: 460 }}>
-          Upload a PDF or TXT file, then ask questions, generate quizzes and summarise chapters —
-          with every answer traceable to the exact page it came from.
+
+        <h1 className="auth-title">{isRegister ? 'Create your account' : 'Welcome back'}</h1>
+        <p className="auth-sub">
+          {isRegister
+            ? 'Your documents stay private to you.'
+            : 'Sign in to reach your library and chats.'}
         </p>
-        <ul className="mt-2 mb-0">
-          <li>Answers grounded in your own documents with clickable citations</li>
-          <li>An agent that picks document search, web search, or a calculator per request</li>
-          <li>Five-question quizzes and chapter summaries from your material</li>
-          <li>Explicit handling of missing evidence and prompt-injection attempts</li>
-        </ul>
-      </section>
 
-      <section className="auth-card-wrap">
-        <div className="auth-card">
-          <div className="d-flex gap-2 mb-4">
-            <button
-              type="button"
-              className={`btn btn-sm flex-fill ${!isRegister ? 'btn-primary' : 'btn-outline-secondary'}`}
-              onClick={() => {
-                setMode('login');
-                setError('');
-              }}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm flex-fill ${isRegister ? 'btn-primary' : 'btn-outline-secondary'}`}
-              onClick={() => {
-                setMode('register');
-                setError('');
-              }}
-            >
-              Create account
-            </button>
-          </div>
-
-          <h2 className="fs-5 fw-bold mb-1">
-            {isRegister ? 'Start studying your own material' : 'Welcome back'}
-          </h2>
-          <p className="text-secondary small mb-4">
-            {isRegister
-              ? 'Accounts keep your documents private to you.'
-              : 'Sign in to reach your document library and chats.'}
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
           </p>
+        )}
 
-          {error && (
-            <div className="alert alert-danger py-2 small" role="alert">
-              {error}
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
+          {isRegister && (
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                className="auth-input"
+                value={form.name}
+                onChange={handleChange}
+                required
+                minLength={2}
+                autoComplete="name"
+                placeholder="Ada Lovelace"
+              />
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
-            {isRegister && (
-              <div>
-                <label className="form-label small fw-semibold" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  className="form-control"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  minLength={2}
-                  autoComplete="name"
-                />
-              </div>
-            )}
-            <div>
-              <label className="form-label small fw-semibold" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                className="form-control"
-                value={form.email}
-                onChange={handleChange}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div>
-              <label className="form-label small fw-semibold" htmlFor="password">
-                Password
-              </label>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              className="auth-input"
+              value={form.email}
+              onChange={handleChange}
+              required
+              autoComplete="email"
+              autoFocus
+              placeholder="you@university.edu"
+            />
+          </div>
+
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="password">
+              Password
+            </label>
+            <div className="auth-input-wrap">
               <input
                 id="password"
                 name="password"
-                type="password"
-                className="form-control"
+                type={showPassword ? 'text' : 'password'}
+                className="auth-input has-icon"
                 value={form.password}
                 onChange={handleChange}
                 required
                 minLength={isRegister ? 8 : 1}
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
+                placeholder={isRegister ? 'At least 8 characters' : '••••••••'}
               />
-              {isRegister && (
-                <div className="form-text">At least 8 characters.</div>
-              )}
+              <button
+                type="button"
+                className="auth-eye"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                tabIndex={-1}
+              >
+                <EyeIcon open={showPassword} />
+              </button>
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in'}
-            </button>
-          </form>
-        </div>
-      </section>
+          </div>
+
+          {isRegister && (
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="confirmPassword">
+                Confirm password
+              </label>
+              <div className="auth-input-wrap">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirm ? 'text' : 'password'}
+                  className="auth-input has-icon"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="Re-enter your password"
+                />
+                <button
+                  type="button"
+                  className="auth-eye"
+                  onClick={() => setShowConfirm((prev) => !prev)}
+                  aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                  aria-pressed={showConfirm}
+                  tabIndex={-1}
+                >
+                  <EyeIcon open={showConfirm} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="auth-spinner" aria-hidden="true" />
+                Please wait…
+              </>
+            ) : isRegister ? (
+              'Create account'
+            ) : (
+              'Sign in'
+            )}
+          </button>
+        </form>
+
+        <p className="auth-foot">
+          {isRegister ? 'Already have an account? ' : 'New to StudyMate? '}
+          <button type="button" className="auth-link" onClick={() => switchMode(isRegister ? 'login' : 'register')}>
+            {isRegister ? 'Sign in' : 'Create one'}
+          </button>
+        </p>
+      </main>
     </div>
   );
 }

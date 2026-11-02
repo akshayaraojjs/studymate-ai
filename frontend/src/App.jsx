@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { loadStoredAuth, setAuthToken, storeAuth } from './services/api';
+import { useTheme } from './hooks/useTheme';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 
 export default function App() {
   const [auth, setAuth] = useState(() => loadStoredAuth());
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     setAuthToken(auth?.token || null);
@@ -32,5 +34,12 @@ export default function App() {
     return <LoginPage onAuthenticated={handleAuthenticated} />;
   }
 
-  return <DashboardPage auth={auth} onLogout={handleLogout} />;
+  return (
+    <DashboardPage
+      auth={auth}
+      onLogout={handleLogout}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+    />
+  );
 }

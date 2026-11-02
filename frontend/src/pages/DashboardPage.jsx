@@ -19,7 +19,7 @@ import {
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 
-export default function DashboardPage({ auth, onLogout }) {
+export default function DashboardPage({ auth, onLogout, theme, onToggleTheme }) {
   const [documents, setDocuments] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -33,6 +33,7 @@ export default function DashboardPage({ auth, onLogout }) {
   const [panelTab, setPanelTab] = useState('quiz');
   const [panelOpen, setPanelOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState('');
@@ -150,6 +151,28 @@ export default function DashboardPage({ auth, onLogout }) {
     setPanelOpen(false);
   };
 
+  const toggleSidebar = () => {
+    // Opening a panel means leaving the maximised chat view.
+    if (!sidebarOpen) setFocusMode(false);
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const togglePanel = () => {
+    if (!panelOpen) setFocusMode(false);
+    setPanelOpen(!panelOpen);
+  };
+
+  const toggleFocusMode = () => {
+    setFocusMode((value) => {
+      if (!value) {
+        // Give the chat the whole viewport: dismiss the mobile drawers too.
+        setSidebarOpen(false);
+        setPanelOpen(false);
+      }
+      return !value;
+    });
+  };
+
   const handleSelectConversation = async (id) => {
     try {
       const history = await getConversationMessages(id);
@@ -209,11 +232,15 @@ export default function DashboardPage({ auth, onLogout }) {
         onSelectConversation={handleSelectConversation}
         onNewChat={handleNewChat}
         onLogout={onLogout}
-        onToggleSidebar={() => setSidebarOpen((value) => !value)}
-        onTogglePanel={() => setPanelOpen((value) => !value)}
+        onToggleSidebar={toggleSidebar}
+        onTogglePanel={togglePanel}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        focusMode={focusMode}
+        onToggleFocus={toggleFocusMode}
       />
 
-      <div className="app-body">
+      <div className={`app-body ${focusMode ? 'focus-mode' : ''}`}>
         <AppSidebar
           documents={documents}
           selectedIds={selectedIds}
