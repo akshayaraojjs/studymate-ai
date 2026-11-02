@@ -1,0 +1,59 @@
+Chapter 1 Database Fundamentals
+
+A database is an organised collection of structured data that supports efficient storage,
+retrieval and modification. A database management system (DBMS) is the software that manages
+access to the database, enforces constraints and handles concurrent users.
+
+The relational model stores data in relations, which are presented to users as tables made of
+rows (records) and columns (attributes). A primary key uniquely identifies each row in a table.
+A foreign key is a column that references the primary key of another table, and it enforces
+referential integrity between the two tables.
+
+SQL (Structured Query Language) is the standard language for defining schemas, inserting data
+and querying relational databases. Data definition statements include CREATE and ALTER, while
+data manipulation statements include SELECT, INSERT, UPDATE and DELETE.
+
+Chapter 2 SQL Joins
+
+A join combines rows from two or more tables using a related column. An INNER JOIN returns only
+the rows where the join condition matches in both tables. A LEFT JOIN (left outer join) returns
+every row from the left table, plus matching rows from the right table, filling missing values
+with NULL. A RIGHT JOIN is the mirror image of a left join.
+
+A FULL OUTER JOIN returns all rows from both tables, matching where possible. A CROSS JOIN
+produces the cartesian product: every row of the left table paired with every row of the right
+table, which is rarely useful without a filter.
+
+A self join joins a table to itself, which is useful for hierarchies such as employees and their
+managers. Joins should be written on indexed keys where possible because an unindexed join
+condition can force a full table scan.
+
+Chapter 3 Normalization
+
+Normalization organises relational data to reduce redundancy and prevent update, insert and
+delete anomalies. The process applies a series of normal forms.
+
+First normal form (1NF) requires atomic column values: no repeating groups and no lists inside a
+single column. Second normal form (2NF) requires 1NF and removes partial dependencies, so every
+non-key attribute depends on the whole composite key rather than part of it. Third normal form
+(3NF) requires 2NF and removes transitive dependencies, so non-key attributes depend only on the
+primary key.
+
+Boyce-Codd normal form (BCNF) is a stricter version of 3NF: every determinant must be a candidate
+key. Denormalization intentionally reintroduces redundancy to speed up read-heavy workloads, at
+the cost of extra work to keep duplicated data consistent.
+
+Chapter 4 Indexing and Query Performance
+
+An index is an auxiliary data structure that speeds up lookups at the cost of extra storage and
+slower writes. A B-tree index supports equality lookups and range queries efficiently, which
+makes it the default index type in most relational databases. A hash index supports fast equality
+lookups but not range queries.
+
+A covering index includes all columns required by a query, so the database can answer from the
+index without reading the table rows. Composite indexes are order sensitive: a query can use the
+leading columns of the index, but skipping the first column usually prevents an index scan.
+
+Query planning tools such as EXPLAIN show whether the database uses an index scan, a sequential
+scan or a bitmap scan. Indexes should be added for measured slow queries rather than preemptively,
+because every index increases write cost and maintenance time.
